@@ -1,11 +1,14 @@
-/* Ensure proper scrolling on mobile */
-html, body, #root {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-/* Improve touch targets for mobile */
+#root {
+  margin: 0 auto;
+  padding: 0;
+}
+
 @media (max-width: 768px) {
   .MuiIconButton-root {
     padding: 12px;
@@ -17,7 +20,6 @@ html, body, #root {
   }
 }
 
-/* Smooth transitions */
 .MuiPaper-root {
   transition: all 0.3s ease;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   List,
@@ -6,11 +6,10 @@ import {
   Alert,
   Paper,
   Typography,
-} from '@mui/material';
-import { useFileManager } from '../hooks/useFileManeger';
-import { Breadcrumb } from './Breadcrumps';
-import { FileItem } from './Item';
-
+} from "@mui/material";
+import { useFileManagerContext } from "../context/FileManagerContext";
+import { Breadcrumb } from "./Breadcrumps";
+import { FileItem } from "./Item";
 
 export const FileManager: React.FC = () => {
   const {
@@ -20,17 +19,26 @@ export const FileManager: React.FC = () => {
     handleItemClick,
     handleDownload,
     refresh,
-  } = useFileManager();
+    handleRename,
+  } = useFileManagerContext();
 
-  const handleRename = async (oldPath: string, newName: string) => {
-    // TODO: Implement rename API call
-    console.log('Rename:', oldPath, 'to', newName);
-    refresh();
+  const handleEditClick = async (oldPath: string, newName: string) => {
+    console.log("rename:", oldPath, "to", newName);
+    await handleRename(oldPath, newName);
+  };
+
+  const handleBreadcrumbClick = (path: string) => {
+    handleItemClick(path);
   };
 
   if (loading && !data) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
         <CircularProgress />
       </Box>
     );
@@ -47,19 +55,21 @@ export const FileManager: React.FC = () => {
   if (!data) {
     return (
       <Alert severity="info" sx={{ m: 2 }}>
-        No data available
+        Нет данных
       </Alert>
     );
   }
 
   return (
-    <Paper elevation={0} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Breadcrumb />
-      
-      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+    <Paper
+      elevation={0}
+      sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+    >
+      <Breadcrumb onPathClick={handleBreadcrumbClick} />{" "}
+      <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
         {data.files.length === 0 ? (
           <Typography color="text.secondary" textAlign="center" sx={{ mt: 4 }}>
-            This folder is empty
+            Папка пуста
           </Typography>
         ) : (
           <List>
@@ -70,7 +80,7 @@ export const FileManager: React.FC = () => {
                 currentPath={data.path}
                 onItemClick={handleItemClick}
                 onDownload={handleDownload}
-                onRename={handleRename}
+                onRename={handleEditClick}
               />
             ))}
           </List>

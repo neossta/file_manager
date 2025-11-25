@@ -1,14 +1,15 @@
-import React from 'react';
 import { AppBar, Toolbar as MuiToolbar, IconButton, Typography, Box } from '@mui/material';
 import { ArrowBack, Refresh } from '@mui/icons-material';
 import { useFileManager } from '../hooks/useFileManeger';
+import { useFileManagerContext } from '../context/FileManagerContext';
 
 interface ToolbarProps {
   onThemeToggle: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({ onThemeToggle }) => {
-  const { data, handleBack, refresh, loading } = useFileManager();
+   const { data, handleBack, refresh, loading } = useFileManagerContext();
+
 
   return (
     <AppBar position="static" elevation={1}>
