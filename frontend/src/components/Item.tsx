@@ -16,6 +16,7 @@ import {
   Edit as EditIcon,
   Check as CheckIcon,
   Close as CloseIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material";
 import type { FileData } from "../types/fileTypes";
 
@@ -25,6 +26,7 @@ interface FileItemProps {
   onItemClick: (path: string) => void;
   onDownload: (filePath: string, fileName: string) => void;
   onRename: (oldPath: string, newName: string) => void;
+  onDelete: (path: string) => Promise<boolean>;
 }
 
 export const FileItem: React.FC<FileItemProps> = ({
@@ -33,10 +35,14 @@ export const FileItem: React.FC<FileItemProps> = ({
   onItemClick,
   onDownload,
   onRename,
+  onDelete,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(item.name);
   const [isInvalidName, setIsInvalidName] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fullPath = `${currentPath}/${item.name}`;
 
   const handleItemClick = () => {
     if (item.dir && !isEditing) {
@@ -79,7 +85,16 @@ export const FileItem: React.FC<FileItemProps> = ({
     setEditName(value);
   };
 
-  const fullPath = `${currentPath}/${item.name}`;
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(fullPath);
+    } catch (error) {
+      console.error("delete error:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <ListItem
@@ -177,6 +192,14 @@ export const FileItem: React.FC<FileItemProps> = ({
                 <DownloadIcon />
               </IconButton>
             )}
+            <IconButton
+              size="small"
+              onClick={handleDelete}
+              color="default"
+              disabled={isDeleting}
+            >
+              <DeleteIcon />
+            </IconButton>
           </>
         )}
       </Box>
