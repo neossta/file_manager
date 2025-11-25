@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   ListItem,
   ListItemIcon,
@@ -7,7 +7,8 @@ import {
   TextField,
   Box,
   Typography,
-} from '@mui/material';
+  Tooltip,
+} from "@mui/material";
 import {
   Folder as FolderIcon,
   InsertDriveFile as FileIcon,
@@ -15,9 +16,9 @@ import {
   Edit as EditIcon,
   Check as CheckIcon,
   Close as CloseIcon,
-} from '@mui/icons-material';
-import type { FileData } from '../types/fileTypes';
-
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
+import type { FileData } from "../types/fileTypes";
 
 interface FileItemProps {
   item: FileData;
@@ -25,6 +26,7 @@ interface FileItemProps {
   onItemClick: (path: string) => void;
   onDownload: (filePath: string, fileName: string) => void;
   onRename: (oldPath: string, newName: string) => void;
+  onDelete: (path: string) => Promise<boolean>;
 }
 
 export const FileItem: React.FC<FileItemProps> = ({
@@ -33,9 +35,14 @@ export const FileItem: React.FC<FileItemProps> = ({
   onItemClick,
   onDownload,
   onRename,
+  onDelete,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(item.name);
+  const [isInvalidName, setIsInvalidName] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fullPath = `${currentPath}/${item.name}`;
 
   const handleItemClick = () => {
     if (item.dir && !isEditing) {
@@ -58,27 +65,46 @@ export const FileItem: React.FC<FileItemProps> = ({
   const handleEditCancel = () => {
     setEditName(item.name);
     setIsEditing(false);
+    setIsInvalidName(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter" && !isInvalidName) {
       handleEditSave();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       handleEditCancel();
     }
   };
 
-  const fullPath = `${currentPath}/${item.name}`;
+  const handleOnChange = (value: string) => {
+    if (value.includes("/") || value.includes("\\")) {
+      setIsInvalidName(true);
+    } else {
+      setIsInvalidName(false);
+    }
+    setEditName(value);
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(fullPath);
+    } catch (error) {
+      console.error("delete error:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <ListItem
       sx={{
         border: 1,
-        borderColor: 'divider',
+        borderColor: "divider",
         borderRadius: 1,
         mb: 1,
-        '&:hover': {
-          backgroundColor: 'action.hover',
+        "&:hover": {
+          backgroundColor: "action.hover",
         },
       }}
     >
@@ -93,20 +119,33 @@ export const FileItem: React.FC<FileItemProps> = ({
       <ListItemText
         primary={
           isEditing ? (
-            <TextField
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onKeyDown={handleKeyPress}
-              size="small"
-              autoFocus
-              fullWidth
-            />
+            <Tooltip
+              title="Имя не должно содержать символы / и \"
+              open={isInvalidName}
+              arrow
+              placement="top"
+            >
+              <TextField
+                value={editName}
+                onChange={(e) => handleOnChange(e.target.value)}
+                onKeyDown={handleKeyPress}
+                size="small"
+                autoFocus
+                fullWidth
+                error={isInvalidName}
+              />
+            </Tooltip>
           ) : (
             <Typography
               onClick={handleItemClick}
               sx={{
-                cursor: item.dir ? 'pointer' : 'default',
-                '&:hover': item.dir ? { textDecoration: 'underline' } : {},
+                cursor: item.dir ? "pointer" : "default",
+                "&:hover": item.dir ? { textDecoration: "underline" } : {},
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                maxWidth: "100%",
+                display: "block",
               }}
             >
               {item.name}
@@ -114,7 +153,8 @@ export const FileItem: React.FC<FileItemProps> = ({
           )
         }
         secondary={
-          !item.dir && (
+          !item.dir &&
+          !isEditing && (
             <Typography variant="body2" color="text.secondary">
               {(item.size / 1024).toFixed(2)} KB
             </Typography>
@@ -123,10 +163,15 @@ export const FileItem: React.FC<FileItemProps> = ({
         sx={{ flex: 1 }}
       />
 
-      <Box sx={{ display: 'flex', gap: 1 }}>
+      <Box sx={{ display: "flex", gap: 1, ml: 3 }}>
         {isEditing ? (
           <>
-            <IconButton size="small" onClick={handleEditSave} color="primary">
+            <IconButton
+              size="small"
+              onClick={handleEditSave}
+              color="primary"
+              disabled={isInvalidName}
+            >
               <CheckIcon />
             </IconButton>
             <IconButton size="small" onClick={handleEditCancel} color="error">
@@ -147,6 +192,14 @@ export const FileItem: React.FC<FileItemProps> = ({
                 <DownloadIcon />
               </IconButton>
             )}
+            <IconButton
+              size="small"
+              onClick={handleDelete}
+              color="default"
+              disabled={isDeleting}
+            >
+              <DeleteIcon />
+            </IconButton>
           </>
         )}
       </Box>

@@ -119,4 +119,129 @@ module.exports = function (app) {
       });
     }
   });
+
+  app.delete("/delete", (req, res) => {
+    try {
+      const { path } = req.query;
+
+      if (!path) {
+        return res.status(400).json({
+          result: false,
+          error: "Неправильный запрос",
+        });
+      }
+
+      const fullPath = getSafePath(path);
+
+      if (!fs.existsSync(fullPath)) {
+        return res.status(404).json({
+          result: false,
+          error: "Файл не найден",
+        });
+      }
+
+      const stats = fs.lstatSync(fullPath);
+      if (stats.isDirectory()) {
+        fs.rmSync(fullPath, { recursive: true, force: true });
+      } else {
+        fs.unlinkSync(fullPath);
+      }
+
+      res.json({
+        result: true,
+        path: path,
+      });
+    } catch (error) {
+      console.error("Ошибка при удалении файла:", error);
+      res.status(500).json({
+        result: false,
+        error: error.message,
+      });
+    }
+  });
+
+  app.post("/folder", (req, res) => {
+    try {
+      const { path: folderPath, name } = req.query;
+
+      if (!name) {
+        return res.status(400).json({
+          result: false,
+          error: "Неправильный запрос",
+        });
+      }
+
+      if (name.includes("/") || name.includes("\\") || name.trim() === "") {
+        return res.status(400).json({
+          result: false,
+          error: "Имя файла содержит недопустимые символы",
+        });
+      }
+
+      const basePath = getSafePath(folderPath);
+      const newFolderPath = path.join(basePath, name);
+
+      if (fs.existsSync(newFolderPath)) {
+        return res.status(400).json({
+          result: false,
+          error: "Файл с таким именем уже существует",
+        });
+      }
+
+      fs.mkdirSync(newFolderPath, { recursive: true });
+
+      res.json({
+        result: true,
+        path: folderPath,
+        name: name,
+      });
+    } catch (error) {
+      console.error("create folder error:", error);
+      res.status(500).json({
+        result: false,
+        error: error.message,
+      });
+    }
+  });
+
+  app.get("/download", (req, res) => {
+    try {
+      const { path: filePath } = req.query;
+
+      if (!filePath) {
+        return res.status(400).json({
+          result: false,
+          error: "Ошибка в запросе",
+        });
+      }
+
+      const fullPath = getSafePath(filePath);
+
+      if (!fs.existsSync(fullPath)) {
+        return res.status(404).json({
+          result: false,
+          error: "Файл не найден",
+        });
+      }
+
+      const stats = fs.lstatSync(fullPath);
+
+      const fileName = path.basename(fullPath);
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileName}"`
+      );
+      res.setHeader("Content-Type", "application/octet-stream");
+
+      const fileStream = fs.createReadStream(fullPath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error("download error:", error);
+      res.status(500).json({
+        result: false,
+        error: error.message,
+      });
+    }
+  });
 };
