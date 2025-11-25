@@ -27,7 +27,7 @@ export const Layout: React.FC<LayoutProps> = ({
             xs: "85vh",
             sm: "90vh",
           },
-          minWidth: {
+          width: {
             xs: "100vw",
             sm: "65vw",
           },

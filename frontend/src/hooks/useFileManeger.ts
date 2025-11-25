@@ -57,7 +57,7 @@ export const useFileManager = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Ошибка при изменение имени файла");
+        throw new Error(errorData.error || "Ошибка при изменении имени файла");
       }
 
       const result = await response.json();
@@ -69,7 +69,7 @@ export const useFileManager = () => {
         throw new Error(result.error || "Ошибка при загрузке данных");
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Rename failed";
+      const errorMessage = err instanceof Error ? err.message : "Ошибка при изменении имени файла";
       setError(errorMessage);
       console.error("Rename error:", errorMessage);
       return false;

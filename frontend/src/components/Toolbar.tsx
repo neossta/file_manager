@@ -1,15 +1,20 @@
-import { AppBar, Toolbar as MuiToolbar, IconButton, Typography, Box } from '@mui/material';
-import { ArrowBack, Refresh } from '@mui/icons-material';
-import { useFileManager } from '../hooks/useFileManeger';
-import { useFileManagerContext } from '../context/FileManagerContext';
+import {
+  AppBar,
+  Toolbar as MuiToolbar,
+  IconButton,
+  Typography,
+  Box,
+} from "@mui/material";
+import { ArrowBack, Refresh } from "@mui/icons-material";
+import { useFileManager } from "../hooks/useFileManeger";
+import { useFileManagerContext } from "../context/FileManagerContext";
 
 interface ToolbarProps {
   onThemeToggle: () => void;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({ onThemeToggle }) => {
-   const { data, handleBack, refresh, loading } = useFileManagerContext();
-
+  const { data, handleBack, refresh, loading } = useFileManagerContext();
 
   return (
     <AppBar position="static" elevation={1}>
@@ -18,7 +23,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onThemeToggle }) => {
           edge="start"
           color="inherit"
           onClick={handleBack}
-          disabled={!data?.path || data.path === '/'}
+          disabled={!data?.path || data.path === "/"}
           sx={{ mr: 2 }}
         >
           <ArrowBack />
@@ -28,7 +33,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({ onThemeToggle }) => {
           File Manager
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <IconButton color="inherit" onClick={refresh} disabled={loading}>
             <Refresh />
           </IconButton>
