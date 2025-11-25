@@ -1,0 +1,23 @@
+/* Ensure proper scrolling on mobile */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Improve touch targets for mobile */
+@media (max-width: 768px) {
+  .MuiIconButton-root {
+    padding: 12px;
+  }
+  
+  .MuiListItem-root {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
+/* Smooth transitions */
+.MuiPaper-root {
+  transition: all 0.3s ease;
+}
