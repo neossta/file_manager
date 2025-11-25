@@ -21,9 +21,7 @@ cd file-manager
 
 2. **Бэкенд**
 ```bash
-cd backend
-npm install
-npm start
+docker compose up --build backend
 ```
 ✅ Сервер запущен на: http://localhost:8000
 
