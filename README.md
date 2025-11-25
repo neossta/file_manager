@@ -15,7 +15,7 @@
 
 1. **Клонируйте репозиторий**
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/neossta/file_manager.git
 cd file-manager
 ```
 
