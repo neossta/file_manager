@@ -12,6 +12,7 @@ import {
   Tooltip,
   TextField,
   IconButton,
+  Link,
 } from "@mui/material";
 import {
   Folder as FolderIcon,
@@ -22,6 +23,7 @@ import {
 import { useFileManagerContext } from "../context/FileManagerContext";
 import { Breadcrumb } from "./Breadcrumps";
 import { FileItem } from "./Item";
+import { FileUpload } from "./FileUpload";
 
 export const FileManager: React.FC = () => {
   const {
@@ -40,6 +42,7 @@ export const FileManager: React.FC = () => {
 
   const [newFolderName, setNewFolderName] = useState("");
   const [isInvalidName, setIsInvalidName] = useState(false);
+  const [showUploadWindow, setShowUploadWindow] = useState(false);
 
   const handleEditClick = async (oldPath: string, newName: string) => {
     console.log("rename:", oldPath, "to", newName);
@@ -116,6 +119,30 @@ export const FileManager: React.FC = () => {
     >
       <Breadcrumb onPathClick={handleBreadcrumbClick} />{" "}
       <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
+        <Link
+          component="button"
+          onClick={(e) => {
+            e.preventDefault();
+            setShowUploadWindow(!showUploadWindow);
+          }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            cursor: "pointer",
+            color: "inherit",
+            border: "none",
+            background: "none",
+            marginBottom: 2,
+          }}
+        >
+          Загрузить файл
+        </Link>
+        {showUploadWindow ? (
+          <FileUpload
+            onUploadComplete={refresh}
+            currentPath={data?.path || ""}
+          />
+        ) : null}
         {isCreatingFolder && (
           <ListItem
             sx={{

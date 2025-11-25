@@ -1,5 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+const multer = require("multer");
+
 
 module.exports = function (app) {
   function isFolderSync(dirPath) {
@@ -21,6 +23,53 @@ module.exports = function (app) {
 
     return fullPath;
   }
+
+  const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = getSafePath(req.body.path || "");
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    const originalName = file.originalname;
+    const filePath = path.join(getSafePath(req.body.path || ""), originalName);
+
+    if (fs.existsSync(filePath)) {
+      // добавляеи timestamp к имени файла если такое имя уже есть
+      const ext = path.extname(originalName);
+      const name = path.basename(originalName, ext);
+      const timestamp = Date.now();
+      cb(null, `${name}_${timestamp}${ext}`);
+    } else {
+      cb(null, originalName);
+    }
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".pdf",
+      ".txt",
+      ".doc",
+      ".docx",
+    ];
+    const ext = path.extname(file.originalname).toLowerCase();
+
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type ${ext} is not allowed`), false);
+    }
+  },
+});
+
 
   app.get("/", (req, res) => {
     try {
@@ -238,6 +287,30 @@ module.exports = function (app) {
       fileStream.pipe(res);
     } catch (error) {
       console.error("download error:", error);
+      res.status(500).json({
+        result: false,
+        error: error.message,
+      });
+    }
+  });
+  app.post("/upload", upload.single("file"), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          result: false,
+          error: "Ошибка запроса",
+        });
+      }
+
+      res.json({
+        result: true,
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        path: req.body.path || "",
+      });
+    } catch (error) {
+      console.error("upload error:", error);
       res.status(500).json({
         result: false,
         error: error.message,
